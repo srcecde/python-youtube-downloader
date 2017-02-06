@@ -8,16 +8,19 @@ Email: chiragr83@gmail.com
 import os
 import itertools
 import sys
+import threading
 from pytube import *
 from PyQt5 import QtCore, QtGui as qt, QtWidgets as qw
 
 exp_user = os.path.expanduser("~")
 op = os.path.join(exp_user, "Downloads", "YouTube Videos")
+vid = str()
 
 
 class MainUi(qw.QMainWindow):
     def __init__(self):
         super(MainUi, self).__init__()
+        threading.Thread.__init__(self)
         self.setGeometry(50, 50, 700, 500)
         self.setWindowTitle("YouTube Video Downloader")
 
@@ -79,6 +82,7 @@ class MainUi(qw.QMainWindow):
 
 
 def download(self):
+    global vid
     print(self.enter_url_txt.text())
     vid_url = s_url(self)
     vid = vid_url.get(self.split_lst2[0], self.split_lst2[1])
@@ -86,7 +90,18 @@ def download(self):
     if not os.path.exists(op):
         os.makedirs(op)
 
-    vid.download(op)
+    self.threadclass = ThreadDwn()
+    self.threadclass.start()
+
+
+class ThreadDwn(QtCore.QThread):
+    global vid
+
+    def __init__(self):
+        super(ThreadDwn, self).__init__()
+
+    def run(self):
+            vid.download(op)
 
 
 def check_avail(self):
