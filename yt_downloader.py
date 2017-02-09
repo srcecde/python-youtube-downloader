@@ -11,7 +11,9 @@ import sys
 import threading
 from pytube import *
 from PyQt5 import QtCore, QtGui as qt, QtWidgets as qw
+from PyQt5.QtCore import QObject, pyqtSignal
 
+#Setting Path to save the Downloaded Videos
 exp_user = os.path.expanduser("~")
 op = os.path.join(exp_user, "Downloads", "YouTube Videos")
 vid = str()
@@ -24,6 +26,7 @@ class MainUi(qw.QMainWindow):
         self.setGeometry(50, 50, 700, 500)
         self.setWindowTitle("YouTube Video Downloader")
 
+        # Setting style of the Qt Window
         qw.QApplication.setStyle(qw.QStyleFactory.create("Plastique"))
 
         hfont = qt.QFont()
@@ -74,34 +77,69 @@ class MainUi(qw.QMainWindow):
 
         self.resoution_list.currentIndexChanged.connect(self.selectionchange)
 
+    def handle_trigger(self):
+        # This function will be called when download is completed
+        InfoMessage(self, "The Video has been downloaded at Downloads/YouTube Videos")
+
     def selectionchange(self):
+        # Setting up resolution and extension
         selected_resolution = []
         selected_resolution.append(self.resoution_list.currentText())
         split_lst = [i.split(' - ') for i in selected_resolution]
         self.split_lst2 = list(itertools.chain.from_iterable(split_lst))
 
 
+def ErrorMessage(self, text):
+
+    choice = qw.QMessageBox.information(self, "Error!",
+                                    text,
+                                    qw.QMessageBox.Ok)
+    if(choice == qw.QMessageBox.Ok):
+        pass
+    else:
+        pass
+
+
+def InfoMessage(self, text):
+
+    choice = qw.QMessageBox.information(self, "Information!",
+                                    text,
+                                    qw.QMessageBox.Ok)
+    if(choice == qw.QMessageBox.Ok):
+        pass
+    else:
+        pass
+
+
 def download(self):
     global vid
-    print(self.enter_url_txt.text())
     vid_url = s_url(self)
     vid = vid_url.get(self.split_lst2[0], self.split_lst2[1])
 
     if not os.path.exists(op):
         os.makedirs(op)
 
+    InfoMessage(self, "Downloading Video!!! You will be informed when done")
+
+    # Triggering download process on the sub thread to avoid freezing of UI
     self.threadclass = ThreadDwn()
+    # The below will be triggered when ThreadDwn class will emit the signal
+    self.threadclass.trig.connect(lambda: MainUi.handle_trigger(self))
     self.threadclass.start()
 
 
-class ThreadDwn(QtCore.QThread):
+class ThreadDwn(QtCore.QThread, qw.QMainWindow):
     global vid
+    trig = pyqtSignal()
 
     def __init__(self):
         super(ThreadDwn, self).__init__()
 
     def run(self):
-            vid.download(op)
+        # Downloading Video
+        vid.download(op)
+        # Emit the signal when downloading is finished
+        self.trig.emit()
 
 
 def check_avail(self):
@@ -120,19 +158,9 @@ def check_avail(self):
 
 
 def s_url(self):
+    # Getting URL from text box
     vid_url = YouTube(self.enter_url_txt.text())
     return vid_url
-
-
-def ErrorMessage(self, text):
-
-    choice = qw.QMessageBox.information(self, "Error!",
-                                        text,
-                                        qw.QMessageBox.Ok)
-    if(choice == qw.QMessageBox.Ok):
-        pass
-    else:
-        pass
 
 
 def main():
