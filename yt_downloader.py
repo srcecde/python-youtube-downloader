@@ -144,7 +144,7 @@ class ThreadDwn(QtCore.QThread, qw.QMainWindow):
 
 def check_avail(self):
     vid_url = s_url(self)
-    files = vid_url.videos
+    files = vid_url.get_videos()
     v_list = []
     for f in files:
         v_extn = f.extension
