@@ -2,6 +2,7 @@ language: python
 python:
   - "3.6"
 install:
+  - sudo apt-get update
   - sudo pip3 install PyQt5
   - pip install -r requirements.txt
 script: python tests/test_yt_downloader.py -v
